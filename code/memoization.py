@@ -19,6 +19,10 @@ def is_adjacent(i, j):
 
 def precedes(i, j, k):
     j_dist = (j - i + n) % n
+    k_dist = (k - i + n) % n
+    if j_dist < k_dist:
+        return j, k
+    return k, j
 
 
 def initialize_bridges():
@@ -44,19 +48,29 @@ def solve(u, v, w):
     if (u, v, w) in D:
         return D[(u, v, w)]
 
-    # current cone is actually a triangle -- we can solve immediately
-    if v == clockwise(u, 2):
-        return weights[u] * weights[clockwise(u, 1)] * weights[v]
-
     v1, v2, v3 = (w, u, v) if w != 0 else (u, v, bridges[u][v])
-
+    x, y = precedes(v1, v2, v3)
+    result = 0
+    
     if is_adjacent(v1, v2) and is_adjacent(v1, v3):
+        v4 = bridges[x][y]
+        branch_one = v1 * v2 * v3 + solve(x, y, 0)
+        branch_two = solve(x, v4, v1) + solve(v4, y, v1)
+
+        result = min(branch_one, branch_two)
 
     elif not is_adjacent(v1, v2) and not is_adjacent(v1, v3):
-        return solve(v1, v2, 0) +
+        result = solve(v1, x, 0) + solve(x, y, v1) + solve(y, v1, 0)
+
     else:
-        x, y = (v2, v3) if is_adjacent(v1, v2) else (v3, v2)
-        return solve(x, y, v1) + solve(y, v1, 0)
+        a, b = (v2, v3) if is_adjacent(v1, v2) else (v3, v2)
+        if (a == x):
+            result = solve(x, y, v1) + solve(y, v1, 0)
+        else:
+            result = solve(v1, x, 0) + solve(x, y, v1)
+
+    D[(u, v, w)] = result
+    return result
 
 if __name__ == '__main__':
     # Assume all vertex weights are distinct
