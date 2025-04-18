@@ -1,29 +1,10 @@
-weights = [1, 4, 3, 6, 10, 2]
+weights = [1, 2, 4, 3]
 n = len(weights)
-# bridges[i][j] stores:
-#   the next smallest weight + corresponding index between i,j if (i,j) is a bridge, OR
-#   -1 if (i,j) is not a bridge
 
-bridges = [[(-1, -1)] * n for _ in range(n)]
-
-
-
-def print_2d(arr):
-    print('\n'.join(['\t'.join(map(str, row)) for row in arr]))
+bridges = [[-1] * n for _ in range(n)]
 
 def clockwise(i, k):
     return (i + k + n) % n
-
-def is_adjacent(i, j):
-    return j == clockwise(i, 1) or j == clockwise(i, -1)
-
-def precedes(i, j, k):
-    j_dist = (j - i + n) % n
-    k_dist = (k - i + n) % n
-    if j_dist < k_dist:
-        return j, k
-    return k, j
-
 
 def initialize_bridges():
     for i in range(len(weights)):
@@ -39,40 +20,44 @@ def initialize_bridges():
             j = clockwise(j, 1)
 
 D = {}
-# NOTE: ASSUME weights[u] < weights[v]
-# 3 cases:
-    # one adjacent
-    # both adjacent
-    # netiher adjacent
 def solve(u, v, w):
     if (u, v, w) in D:
         return D[(u, v, w)]
 
-    v1, v2, v3 = (w, u, v) if w != 0 else (u, v, bridges[u][v])
-    x, y = precedes(v1, v2, v3)
-    result = 0
-    
-    if is_adjacent(v1, v2) and is_adjacent(v1, v3):
-        v4 = bridges[x][y]
-        branch_one = v1 * v2 * v3 + solve(x, y, 0)
-        branch_two = solve(x, v4, v1) + solve(v4, y, v1)
+    if v == clockwise(u, 1):
+        if w == -1:
+            D[(u, v, w)] = 0
+        else:
+            D[(u, v, w)] = weights[u] * weights[v] * weights[w]
+        return D[(u, v, w)]
 
-        result = min(branch_one, branch_two)
-
-    elif not is_adjacent(v1, v2) and not is_adjacent(v1, v3):
-        result = solve(v1, x, 0) + solve(x, y, v1) + solve(y, v1, 0)
+    if w == -1: #v directly clockwise to u,
+        v3 = bridges[u][v]
+        if weights[u] < weights[v]:
+            t1 = solve(u, v3, -1)
+            t2 = solve(v3, v, u)
+        else:
+            t1 = solve(u, v3, v)
+            t2 = solve(v3, v, -1)
+        D[(u, v, w)] = t1 + t2
+        return D[(u, v, w)]
 
     else:
-        a, b = (v2, v3) if is_adjacent(v1, v2) else (v3, v2)
-        if (a == x):
-            result = solve(x, y, v1) + solve(y, v1, 0)
-        else:
-            result = solve(v1, x, 0) + solve(x, y, v1)
+        v4 = bridges[u][v]
+        t1 = solve(u, v, -1)
+        t2 = solve(u, v4, w)
+        t3 = solve(v4, v, w)
+        D[(u, v, w)] = min(t1 + weights[u] * weights[v] * weights[w], t2 + t3)
+        return D[(u, v, w)]
 
-    D[(u, v, w)] = result
-    return result
+def solve_full():
+    initialize_bridges()
+    v1 = weights.index(min(weights))
+    v2 = weights.index(min([w for w in weights if w != weights[v1]]))
+    # get indices of smallest and second smallest vertices
+
+    return solve(v1, v2, -1) + solve(v2, v1, -1)
 
 if __name__ == '__main__':
-    # Assume all vertex weights are distinct
-    initialize_bridges()
-    print_2d(bridges)
+    print("Given vertices:", str(weights))
+    print("Minimum triangulation is:", solve_full())
