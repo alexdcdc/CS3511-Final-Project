@@ -1,11 +1,13 @@
 from manim import *
 import numpy as np
 import algorithm
+import random
 
 
 class PolygonTriangulation(Scene):
     def construct(self):
-        weights = [6, 10, 2, 1, 4, 3, 8, 5] # Vertex weights of polygon
+        weights = list(range(30, 43))
+        random.shuffle(weights)
 
         # Draw the original polygon
         n = len(weights)
