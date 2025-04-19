@@ -66,7 +66,7 @@ def get_edge_list(k):
     if k not in edges:
         return []
     children = froms[k]
-    l = [edges[k]]
+    l = [(k, edges[k])]
 
     for c in children:
         l = l + get_edge_list(c)
@@ -82,11 +82,12 @@ def solve_full(weights):
     v2 = weights.index(min([w for w in weights if w != weights[v1]]))
     # get indices of smallest and second smallest vertices
     result = solve(weights, bridges, v1, v2, -1) + solve(weights, bridges, v2, v1, -1)
-    visited = [(v1, v2)] + get_edge_list((v1, v2, -1)) + get_edge_list((v2, v1, -1))
-    print(visited)
-    visited = list(filter(lambda x: 1 < abs(x[0] - x[1]) < n - 1, visited))
-    print(visited)
-    return result, visited
+    visited = [((-1, -1, -1), (v1, v2))] + get_edge_list((v1, v2, -1)) + get_edge_list((v2, v1, -1))
+    visited = list(filter(lambda x: 1 < abs(x[1][0] - x[1][1]) < n - 1, visited))
+    cones = [a[0] for a in visited]
+    internal_edges = [a[1] for a in visited]
+    print(cones, internal_edges)
+    return result, internal_edges, cones
 
 if __name__ == '__main__':
     print("Minimum triangulation is:", solve_full([4, 6, 10, 5]))
