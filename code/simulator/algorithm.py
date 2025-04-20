@@ -1,6 +1,7 @@
 D = {}
 froms = {}
 edges = {}
+triangles = {}
 
 def clockwise(i, k, weights):
     n = len(weights)
@@ -26,6 +27,7 @@ def solve(weights, bridges, u, v, w):
         if w == -1:
             D[(u, v, w)] = 0
         else:
+            triangles[(u, v, w)] = (u, v, w)
             D[(u, v, w)] = weights[u] * weights[v] * weights[w]
         return D[(u, v, w)]
 
@@ -55,6 +57,7 @@ def solve(weights, bridges, u, v, w):
         if (branch1 < branch2):
             froms[(u, v, w)] = [(u, v, -1)]
             edges[(u, v, w)] = (u, v)
+            triangles[(u, v, w)] = (u, v, w)
         else:
             froms[(u, v, w)] = [(u, v4, w), (v4, v, w)]
             edges[(u, v, w)] = (w, v4)
@@ -63,7 +66,7 @@ def solve(weights, bridges, u, v, w):
         return D[(u, v, w)]
 
 def get_edge_list(k):
-    if k not in edges:
+    if k not in froms:
         return []
     children = froms[k]
     l = [(k, edges[k])]
@@ -73,6 +76,14 @@ def get_edge_list(k):
 
     return l
 
+def get_triangles(k):
+    children = froms[k] if k in froms else []
+    l = [triangles[k]] if k in triangles else []
+
+    for c in children:
+        l = l + get_triangles(c)
+
+    return l
 
 def solve_full(weights):
     n = len(weights)
@@ -86,8 +97,9 @@ def solve_full(weights):
     visited = list(filter(lambda x: 1 < abs(x[1][0] - x[1][1]) < n - 1, visited))
     cones = [a[0] for a in visited]
     internal_edges = [a[1] for a in visited]
-    print(cones, internal_edges)
-    return result, internal_edges, cones
+    sol_triangles = get_triangles((v2, v1, -1)) + get_triangles((v1, v2, -1))
+    print(sol_triangles)
+    return result, internal_edges, cones, sol_triangles
 
 if __name__ == '__main__':
     print("Minimum triangulation is:", solve_full([4, 6, 10, 5]))
