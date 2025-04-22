@@ -102,6 +102,6 @@ def solve_full(weights):
     return result, internal_edges, cones, sol_triangles
 
 if __name__ == '__main__':
-    print("Minimum triangulation is:", solve_full([4, 6, 10, 5]))
+    print("Minimum triangulation is:", solve_full([10, 13, 15, 16, 14, 12]))
     # print("Minimum triangulation is:", solve_full([6, 10, 2, 1, 4, 3, 15, 5]))
 

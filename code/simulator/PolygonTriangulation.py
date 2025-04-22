@@ -49,13 +49,18 @@ class PolygonTriangulation(Scene):
         label.move_to(incenter)
         return label
 
-    def construct(self):
-        n = 6
+    def generate_random_weights(self, n):
         weights = []
         while len(weights) < n:
-            next_num = random.randint(5, 15)
+            next_num = random.randint(1, 20)
             if next_num not in weights:
                 weights.append(next_num)
+
+        return weights
+
+    def construct(self):
+        weights = [10, 13, 15, 16, 14, 12]
+        n = len(weights)
 
         radius = 2.5
         polygon = RegularPolygon(n=n, radius=radius, color=BLUE)
@@ -105,7 +110,6 @@ class PolygonTriangulation(Scene):
             self.wait(0.4)
             triangle_weight = weights[triangles[i][0]] * weights[triangles[i][1]]*weights[triangles[i][2]]
             final_equation.add(MathTex(str(triangle_weight), font_size=32))
-            result += triangle_weight
             if i != len(triangles) - 1:
                 final_equation.add(MathTex("+", font_size=32))
 
